@@ -3,35 +3,101 @@
  * @description This script is designed to be run from a Google Sheet. It will send an email with attachments and links to a list of recipients based on the value in the "Campus" column of the sheet. The administrator will first create two letters using Autocrat. The letters will be saved in a campus specific shared Google Drive folder. When the adminstrator is ready to send the email, he clicks on the 'Notify Campuses' user menu and then the option that is provided by the dropdown. An email will be sent to the campus administrators with a link to the folder and the two letters.
  * @projectLead Reggie Ollendieck, Associate Principal, NAMS
  * @author Alvaro Gomez, Academic Technology Coach, 1-210-397-9408, alvaro.gomez@nisd.net
- * @lastUpdated 07/15/25
+ * @lastUpdated 08/11/25
  */
 
-const EMAIL_SENT_COL = "Return date";
+/**
+ * The name of the column used to track the return date for sent emails.
+ * @constant {string}
+ */
+const RETURN_DATE = "Anticipated Return date";
+
+/**
+ * The name of the column used to track the date when the email was sent to campuses.
+ * @constant {string}
+ */
 const DATE_SENT_COL = "Date when the email was sent to campuses";
+
+/**
+ * The name of the column used to store the campus folder ID.
+ * @constant {string}
+ */
 const CAMPUS_FOLDER_COL = "Campus folder ID";
 
+/**
+ * Adds a custom menu to the Google Sheets UI when the spreadsheet is opened.
+ * The menu allows users to send emails to campuses based on specific criteria.
+ * @function
+ * @returns {void}
+ */
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu("📬 Notify Campuses")
     .addItem(
-      "Send emails to campuses with a date in column F and a blank in column BD",
+      "Preview emails (don't send)",
+      "previewEmails"
+    )
+    .addItem(
+      "Send emails to campuses",
       "sendEmails"
     )
     .addToUi();
 }
 
+/**
+ * Preview emails without sending them.
+ * Shows a summary of what would be sent.
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} [sheet] - The sheet to process.
+ * @returns {void}
+ */
+function previewEmails(
+  sheet = SpreadsheetApp.openById(
+    "1p0KwjAMLnI4KyPG1ErNq0oRmGpQ8GWGDSnYVa7MYnP0"
+  ).getSheetByName("Teacher Notes")
+) {
+  processEmails(sheet, true);
+}
+
+/**
+ * Sends emails to campuses based on the data in the sheet.
+ * Only sends emails for rows with a return date, no sent date, and a campus folder ID.
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} [sheet] - The sheet to process. Defaults to the 'Teacher Notes' sheet.
+ * @returns {void}
+ */
 function sendEmails(
   sheet = SpreadsheetApp.openById(
     "1p0KwjAMLnI4KyPG1ErNq0oRmGpQ8GWGDSnYVa7MYnP0"
   ).getSheetByName("Teacher Notes")
 ) {
+  processEmails(sheet, false);
+}
+
+/**
+ * Main function to process emails with preview or send mode.
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet - The sheet to process.
+ * @param {boolean} previewMode - If true, shows preview without sending.
+ * @returns {void}
+ */
+function processEmails(sheet, previewMode = false) {
+  const startTime = new Date();
+  Logger.log(`${previewMode ? 'Preview' : 'Send'} operation started at ${startTime}`);
+  
+  // Validation: Check sheet
   const sheetName = sheet.getName();
   const targetSheetname = "Teacher Notes";
 
   if (sheetName !== targetSheetname) {
-    SpreadsheetApp.getUi().alert(
-      'This function can only be run from the "' + targetSheetname + '" sheet.'
-    );
+    const errorMsg = `Function can only be run from the "${targetSheetname}" sheet. Current sheet: "${sheetName}"`;
+    Logger.log(`ERROR: ${errorMsg}`);
+    SpreadsheetApp.getUi().alert(errorMsg);
+    return;
+  }
+
+  // Validation: Check if sheet has data
+  if (sheet.getLastRow() < 2) {
+    const errorMsg = "No data found in sheet. Sheet must have at least a header row and one data row.";
+    Logger.log(`ERROR: ${errorMsg}`);
+    SpreadsheetApp.getUi().alert(errorMsg);
     return;
   }
 
@@ -44,60 +110,177 @@ function sendEmails(
   const data = dataRange.getDisplayValues();
   const heads = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
 
-  const emailSentColIdx = heads.indexOf(DATE_SENT_COL);
-
-  if (emailSentColIdx === -1) {
-    SpreadsheetApp.getUi().alert("Required column is missing.");
+  // Validation: Check required columns
+  const requiredColumns = [RETURN_DATE, DATE_SENT_COL, CAMPUS_FOLDER_COL, "Campus", "Name"];
+  const missingColumns = requiredColumns.filter(col => heads.indexOf(col) === -1);
+  
+  if (missingColumns.length > 0) {
+    const errorMsg = `Missing required columns: ${missingColumns.join(", ")}`;
+    Logger.log(`ERROR: ${errorMsg}`);
+    SpreadsheetApp.getUi().alert(errorMsg);
+    return;
   }
+
+  const emailSentColIdx = heads.indexOf(DATE_SENT_COL);
 
   const obj = data.map((r) =>
     heads.reduce((o, k, i) => ((o[k] = r[i] || ""), o), {})
   );
 
-  // Initialize counters for success and error counts for dialog display
-  let successCount = 0;
-  let errorCount = 0;
-  let errorMessages = []; // Stores the error messages for dialog display
+  // Group students by campus
+  const campusGroups = {};
+  const validRows = [];
 
   obj.forEach(function (row, rowIdx) {
     if (
-      row[EMAIL_SENT_COL].trim() !== "" &&
+      row[RETURN_DATE].trim() !== "" &&
       row[DATE_SENT_COL] === "" &&
       row[CAMPUS_FOLDER_COL] !== ""
     ) {
-      try {
-        const campusInfo = getInfoByCampus(row["Campus"]);
-        const recipients = campusInfo.recipients;
-        const driveLink = campusInfo.driveLink;
-        const emailTemplate = getGmailTemplateFromDrafts_(row, driveLink);
-        const msgObj = fillInTemplateFromObject_(
-          emailTemplate.message,
-          row,
-          driveLink
-        );
-
-        GmailApp.sendEmail(recipients, msgObj.subject, msgObj.text, {
-          htmlBody: msgObj.html,
-          replyTo: "reggie.ollendieck@nisd.net",
-          cc: "reggie.ollendieck@nisd.net",
-        });
-
-        successCount++;
-        sheet.getRange(rowIdx + 2, emailSentColIdx + 1).setValue(new Date());
-      } catch (e) {
-        Logger.log(`Error on row ${rowIdx + 2}: ${e.message}`);
-        errorCount++;
-        errorMessages.push(`Row ${rowIdx + 2}: ${e.message}`);
+      const campus = row["Campus"];
+      if (!campus || campus.trim() === "") {
+        Logger.log(`WARNING: Row ${rowIdx + 2} has empty campus field`);
+        return;
       }
+      
+      if (!campusGroups[campus]) {
+        campusGroups[campus] = [];
+      }
+      campusGroups[campus].push({ row, rowIdx });
+      validRows.push({ row, rowIdx });
     }
   });
 
-  SpreadsheetApp.getUi().alert(
-    `Emails Sent: ${successCount}\nErrors: ${errorCount}\n${errorMessages.join(
-      "\n"
-    )}`
+  const campusCount = Object.keys(campusGroups).length;
+  const totalStudents = validRows.length;
+
+  Logger.log(`Found ${totalStudents} students across ${campusCount} campuses`);
+
+  if (totalStudents === 0) {
+    const msg = "No students found that meet the criteria (have return date, no sent date, and campus folder ID).";
+    Logger.log(`INFO: ${msg}`);
+    SpreadsheetApp.getUi().alert(msg);
+    return;
+  }
+
+  // Preview mode - show summary and exit
+  if (previewMode) {
+    let previewMessage = `PREVIEW MODE - No emails will be sent\n\n`;
+    previewMessage += `Found ${totalStudents} students across ${campusCount} campuses:\n\n`;
+    
+    Object.keys(campusGroups).forEach(function (campus) {
+      const students = campusGroups[campus];
+      previewMessage += `${campus}: ${students.length} student${students.length === 1 ? '' : 's'}\n`;
+      students.forEach(function(student) {
+        previewMessage += `  • ${student.row["Name"]} (returns: ${student.row[RETURN_DATE]})\n`;
+      });
+      previewMessage += `\n`;
+    });
+    
+    SpreadsheetApp.getUi().alert(previewMessage);
+    Logger.log(`Preview completed. ${totalStudents} students ready to process.`);
+    return;
+  }
+
+  // Confirmation dialog for sending
+  const confirmMessage = `Ready to send emails to ${campusCount} campuses for ${totalStudents} students.\n\nProceed with sending emails?`;
+  const response = SpreadsheetApp.getUi().alert(
+    "Confirm Email Send",
+    confirmMessage,
+    SpreadsheetApp.getUi().ButtonSet.YES_NO
   );
 
+  if (response !== SpreadsheetApp.getUi().Button.YES) {
+    Logger.log("Email send cancelled by user");
+    return;
+  }
+
+  // Initialize counters for success and error counts
+  let successCount = 0;
+  let errorCount = 0;
+  let errorMessages = [];
+
+  // Send one email per campus with all students
+  const campusList = Object.keys(campusGroups);
+  
+  Logger.log(`Starting to send emails to ${campusList.length} campuses`);
+  
+  campusList.forEach(function (campus, index) {
+    Logger.log(`Processing campus ${index + 1}/${campusList.length}: ${campus}`);
+    
+    try {
+      const students = campusGroups[campus];
+      const campusInfo = getInfoByCampus(campus);
+      
+      // Validation: Check if campus info exists
+      if (!campusInfo.recipients || !campusInfo.driveLink) {
+        throw new Error(`No configuration found for campus: ${campus}`);
+      }
+      
+      let recipients = campusInfo.recipients;
+      // Ensure recipients is a comma-separated string
+      if (Array.isArray(recipients)) {
+        recipients = recipients.join(",");
+      }
+      
+      // Validation: Check recipients
+      if (!recipients || recipients.trim() === "") {
+        throw new Error(`No recipients configured for campus: ${campus}`);
+      }
+      
+      const driveLink = campusInfo.driveLink;
+      
+      Logger.log(`  Sending to ${recipients} for ${students.length} students`);
+      
+      // Create grouped email template
+      const emailTemplate = getGroupedGmailTemplate_(students, driveLink, campus);
+      const msgObj = fillInTemplateFromObject_(
+        emailTemplate.message,
+        { Campus: campus },
+        driveLink
+      );
+
+      GmailApp.sendEmail(recipients, msgObj.subject, msgObj.text, {
+        htmlBody: msgObj.html,
+        replyTo: "reggie.ollendieck@nisd.net",
+        // cc: "reggie.ollendieck@nisd.net,zina.gonzales@nisd.net",
+      });
+      
+      successCount++;
+      Logger.log(`  ✓ Email sent successfully to ${campus}`);
+      
+      // Mark all rows in this campus as sent using batch operation
+      const updates = students.map(function(student) {
+        return [student.rowIdx + 2, emailSentColIdx + 1, new Date()];
+      });
+      
+      updates.forEach(function(update) {
+        sheet.getRange(update[0], update[1]).setValue(update[2]);
+      });
+      
+      Logger.log(`  ✓ Marked ${students.length} students as sent`);
+      
+    } catch (e) {
+      const errorMsg = `Campus ${campus}: ${e.message}`;
+      Logger.log(`  ✗ ERROR: ${errorMsg}`);
+      console.error(`Detailed error for ${campus}:`, e);
+      errorCount++;
+      errorMessages.push(errorMsg);
+    }
+  });
+
+  const endTime = new Date();
+  const duration = Math.round((endTime - startTime) / 1000);
+  const resultMessage = `Operation completed in ${duration} seconds\n\nEmails Sent: ${successCount}\nErrors: ${errorCount}${errorMessages.length > 0 ? '\n\nErrors:\n' + errorMessages.join('\n') : ''}`;
+  
+  Logger.log(`Final results: ${successCount} successful, ${errorCount} errors`);
+  SpreadsheetApp.getUi().alert(resultMessage);
+
+  /**
+   * Returns campus-specific information including recipients and drive folder link.
+   * @param {string} campusValue - The campus name.
+   * @returns {{recipients: string[]|string, driveLink: string}} Campus info object.
+   */
   function getInfoByCampus(campusValue) {
     switch (campusValue.toLowerCase()) {
       case "bernal":
@@ -362,7 +545,10 @@ function sendEmails(
         };
       case "test":
         return {
-          recipients: ["alvaro.gomez@nisd.net"], //, "reggie.ollendieck@nisd.net"],
+          recipients: [
+            "reggie.ollendieck@nisd.net",
+            "zina.gonzales@nisd.net"
+          ],
           driveLink: "1nMJAEcGIh_QnhfS5gjCkKd6CtoA3r5cf",
         };
       default:
@@ -373,26 +559,64 @@ function sendEmails(
     }
   }
 
-  function getGmailTemplateFromDrafts_(row, driveLink) {
+  /**
+   * Generates the Gmail message template for multiple students grouped by campus.
+   * @param {Array} students - Array of student objects with row and rowIdx properties.
+   * @param {string} driveLink - The campus drive folder link.
+   * @param {string} campus - The campus name.
+   * @returns {{message: {subject: string, html: string}}} Gmail message template object.
+   */
+  function getGroupedGmailTemplate_(students, driveLink, campus) {
+    const studentCount = students.length;
+    const studentWord = studentCount === 1 ? "student" : "students";
+    
+    // Build student list with links
+    let studentList = "";
+    students.forEach(function(student, index) {
+      const row = student.row;
+      studentList += `
+        <li>
+          <strong>${row["Name"]}</strong> - Expected return: ${row[RETURN_DATE]}<br>
+          <ul>
+            <li><a href="${row["Merged Doc URL - Updated DAEP Transition Plan 8-11-25"]}">DAEP Transition Plan</a></li>
+          </ul>
+        </li>`;
+    });
+
     return {
       message: {
-        subject: "AEP Placement Transition Plan",
-        html: `${row["Name"]} has nearly completed their assigned placement at NAMS and should be returning to ${row["Campus"]} on or around ${row["Return date"]}.<br><br>   
-              On their last day of placement, they will be given withdrawal documents and the parents/guardians will have been called and told to contact ${row["Campus"]} to set up an appointment to re-enroll and meet with an administrator/counselor.<br><br>  
-              Below are links and attachments to a Personalized Transition Plan (with notes from NAMS' assigned social worker), the student's AEP Transition Plan (with grades and notes from their teachers at NAMS), and a link to ${row["Campus"]}'s folder with all of the transition plans for this year.<br><br>
+        subject: `DAEP Placement Transition Plan Notification`,
+        html: `Dear ${campus},<br><br>
+        You have ${studentCount} ${studentWord} who ${
+          studentCount === 1 ? "has" : "have"
+        } nearly completed their assigned placement at NAMS and should be returning to ${campus} soon.<br><br>   
+              On their last day of placement, they will be given withdrawal documents and the parents/guardians will have been called and told to contact ${campus} to set up an appointment to re-enroll and meet with an administrator/counselor.<br><br>  
+              Below is a list of the returning student(s). You can find their DAEP Transition Plans (with grades and notes from their teachers at NAMS) linked below.<br><br>
+
+              <h3>Student(s) returning to ${campus}:</h3>
+              <ul>${studentList}</ul>
+
+              <h3>Important Links:</h3>
+              <ul>
+                <li><a href="https://drive.google.com/drive/folders/${driveLink}">${campus} Drive Folder</a></li>
+                <li><a href="https://drive.google.com/file/d/1qnyQ8cCxLVM9D6rg4wkyBp6KrXIELfNx/view?usp=sharing">Updates in Special Education</a></li>
+              </ul>
+              
               Please let me know if you have any questions or concerns.<br><br>
               Thank you for all you do,<br>
-              JD<br><br>
-              <ul>
-                <li><a href="${row["Merged Doc URL - Home Campus Transition Plan"]}">Personalized Transition Plan</a></li>
-                <li><a href="${row["Merged Doc URL - Student Transition "]}">AEP Transition Plan</a></li>
-                <li><a href="https://drive.google.com/drive/folders/${driveLink}">Drive Folder</a></li>
-                <li><a href="https://drive.google.com/file/d/1qnyQ8cCxLVM9D6rg4wkyBp6KrXIELfNx/view?usp=sharing">Updates in Special Education</a></li>
-              </ul>`,
+              Reggie Ollendieck<br>
+              Associate Principal<br><br>`,
       },
     };
   }
 
+  /**
+   * Fills in a template string with data from the row and drive link.
+   * @param {string|Object} template - The template string or object.
+   * @param {Object} row - The row data object.
+   * @param {string} driveLink - The campus drive folder link.
+   * @returns {Object} The filled-in template object.
+   */
   function fillInTemplateFromObject_(template, row, driveLink) {
     let template_string = JSON.stringify(template);
     template_string = template_string.replace(/{{[^{}]+}}/g, (key) => {
@@ -404,6 +628,11 @@ function sendEmails(
     return JSON.parse(template_string);
   }
 
+  /**
+   * Escapes special characters in a string for safe insertion into templates.
+   * @param {string} str - The string to escape.
+   * @returns {string} The escaped string.
+   */
   function escapeData_(str) {
     return str
       .replace(/[\\]/g, "\\\\")
