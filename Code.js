@@ -320,8 +320,7 @@ function processEmails(sheet, previewMode = false) {
             "norma.esparza@nisd.net",
             "james.garza@nisd.net",
             "keli.hall@nisd.net",
-            "ann.devlin@nisd.net",
-            "kendra.delavega@nisd.net",
+            "ann.devlin@nisd.net"
           ],
           driveLink: "1MZ9MCh1DmI9cJFWbr5BA-v1jJh5Dd1E9",
         };
@@ -341,6 +340,9 @@ function processEmails(sheet, previewMode = false) {
           recipients: [
             "gregory.dylla@nisd.net",
             "marian.johnson@nisd.net",
+            "lawrence.carranco@nisd.net",
+            "jose.texidor@nisd.net",
+            "victoria.denton@nisd.net"
           ],
           driveLink: "1u76TEIq5BbCNCG-i8Ta73VaY7NTOsK4x",
         };
@@ -372,7 +374,7 @@ function processEmails(sheet, previewMode = false) {
             "erica.lashley@nisd.net",
             "javier.lazo@nisd.net",
             "aaron.logan@nisd.net",
-            "david.johnston@nisd.net ",
+            "david.johnston@nisd.net",
           ],
           driveLink: "1jBxe9OFTTcones277XnehgvW4EnM4YQk",
         };
@@ -386,11 +388,10 @@ function processEmails(sheet, previewMode = false) {
           recipients: [
             "anabel.romero@nisd.net",
             "Shannon.Zavala@nisd.net",
+            "juaquin.zavala@nisd.net",
+            "erica.parra@nisd.net",
             "laurel.graham@nisd.net",
-            "robert.ruiz@nisd.net",
-            "ryanne.barecky@nisd.net",
-            "adrian.hysten@nisd.net",
-            "patti.vlieger@nisd.net",
+            "robert.ruiz@nisd.net",            
           ],
           driveLink: "1T90JGPgUu7DhfBBytxRrfgqkMBrkzOAN",
         };
@@ -429,11 +430,9 @@ function processEmails(sheet, previewMode = false) {
         return {
           recipients: [
             "Lynda.Desutter@nisd.net",
-            "tamara.campbell-babin@nisd.net",
-            "tiffany.flores@nisd.net",
-            "tanya.alanis@nisd.net",
-            "brian.pfeiffer@nisd.net",
+            "jessica-1.barrera@nisd.net",                      
             "guadalupe.brister@nisd.net",
+            "kevin.vanlanham@nisd.net",
           ],
           driveLink: "1tOusVf1SxNckZC5ro-dwBlk8-YpKUMuh",
         };
@@ -460,8 +459,7 @@ function processEmails(sheet, previewMode = false) {
       case "ross":
         return {
           recipients: [
-            "christina.lozano@nisd.net",
-            "jason.padron@nisd.net",
+            "christina.lozano@nisd.net",            
             "priscilla.sigala@nisd.net",
             "dolores.cardenas@nisd.net",
             "katherine.vela@nisd.net",
@@ -473,15 +471,10 @@ function processEmails(sheet, previewMode = false) {
       case "rudder":
         return {
           recipients: [
-            "kevin.vanlanham@nisd.net",
             "catelyn.vasquez@nisd.net",
-            "barbra.bloomingdale@nisd.net",
-            "susana.duran@nisd.net",
-            "jesus.alonzo@nisd.net",
-            "grissel.gandaria@nisd.net",
-            "amandam.gonzalez@nisd.net",
             "jeanette.navarro@nisd.net",
-            "paul.ramirez@nisd.net",
+            "jason.padron@nisd.net",
+            "adrian.hysten@nisd.net",
           ],
           driveLink: "1a3PiBLrTtsMJkR6lthx86gUqd2_qeF-D",
         };
@@ -524,7 +517,6 @@ function processEmails(sheet, previewMode = false) {
             "brenda.rayburg@nisd.net",
             "daniel.novosad@nisd.net",
             "mary.harrington@nisd.net",
-            "janet.medina@nisd.net",
           ],
           driveLink: "1QoRQNEt7_gWT3PC_DPnDFjlT1XKVQ3sN",
         };
@@ -532,18 +524,16 @@ function processEmails(sheet, previewMode = false) {
         return {
           recipients: [
             "Richard.DeLaGarza@nisd.net",
-            "juliana.molina@nisd.net",
             "randolph.neuenfeldt@nisd.net",
-            "jaclyn.galvan@nisd.net",
+            "jennifer-a.garcia@nisd.net",
+            "jimann.caliva@nisd.net",
             "veronica.poblano@nisd.net",
-            "monica.perez@nisd.net",
-            "chris.benavidez@nisd.net",
           ],
           driveLink: "1UZDcETdHG5eN9DSCdfKcV0wt72cVY7Ek",
         };
       case "zachry magnet":
         return {
-          recipients: ["mattew.patty@nisd.net"],
+          recipients: ["matthew.patty@nisd.net"],
           driveLink: "1wMjhAx6wGOw5j-tu7-4wTNnH7V80pfPe",
         };
       case "test":
@@ -580,9 +570,6 @@ function processEmails(sheet, previewMode = false) {
       studentList += `
         <li>
           <strong>${row["Name"]}</strong> - Expected return: ${row[RETURN_DATE]}<br>
-          <ul>
-            <li><a href="${row["Merged Doc URL - Updated DAEP Transition Plan 8-11-25"]}">DAEP Transition Plan</a></li>
-          </ul>
         </li>`;
     });
 
@@ -594,14 +581,14 @@ function processEmails(sheet, previewMode = false) {
           studentCount === 1 ? "has" : "have"
         } nearly completed their assigned placement at NAMS and should be returning to ${campus} soon.<br><br>   
               On their last day of placement, they will be given withdrawal documents and the parents/guardians will have been called and told to contact ${campus} to set up an appointment to re-enroll and meet with an administrator/counselor.<br><br>  
-              Below is a list of the returning student(s). You can find their DAEP Transition Plans (with grades and notes from their teachers at NAMS) linked below.<br><br>
+              Below is a list of the returning student(s). You can find their DAEP Transition Plans (with grades and notes from their teachers at NAMS) linked below in your campus folder.<br><br>
 
               <h3>Student(s) returning to ${campus}:</h3>
               <ul>${studentList}</ul>
 
               <h3>Important Links:</h3>
               <ul>
-                <li><a href="https://drive.google.com/drive/folders/${driveLink}">${campus} Drive Folder</a></li>
+                <li><a href="https://drive.google.com/drive/folders/${driveLink}">${campus} Here is a link to your campus folder for the year.</a></li>
                 <li><a href="https://drive.google.com/file/d/1qnyQ8cCxLVM9D6rg4wkyBp6KrXIELfNx/view?usp=sharing">Updates in Special Education</a></li>
               </ul>
               
