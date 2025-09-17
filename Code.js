@@ -1,6 +1,17 @@
 /**
  * @title nams-campus-transition-notification-project-25-26
- * @description This script is designed to be run from a Google Sheet. It will send an email with attachments and links to a list of recipients based on the value in the "Campus" column of the sheet. The administrator will first create two letters using Autocrat. The letters will be saved in a campus specific shared Google Drive folder. When the adminstrator is ready to send the email, he clicks on the 'Notify Campuses' user menu and then the option that is provided by the dropdown. An email will be sent to the campus administrators with a link to the folder and the two letters.
+ * 
+ * @description This script is designed to be run from a Google Sheet. It will send an email
+ * with attachments and links to a list of recipients based on the value in the
+ * "Campus" column of the sheet.
+ * 
+ * Procedure: The user will first create a transition letter using Autocrat. The letter
+ * will be saved in a campus specific shared Google Drive folder.
+ * When the user is ready to send the email, he clicks on 'Notify Campuses'
+ * in the menubar followed by the option that is provided in the dropdown.
+ * An email will be sent to the campus administrators with a link to the folder and the
+ * transition letter.
+ * 
  * @projectLead Reggie Ollendieck, Associate Principal, NAMS
  * @author Alvaro Gomez, Academic Technology Coach, 1-210-397-9408, alvaro.gomez@nisd.net
  * @lastUpdated 08/11/25
@@ -26,7 +37,8 @@ const CAMPUS_FOLDER_COL = "Campus folder ID";
 
 /**
  * Adds a custom menu to the Google Sheets UI when the spreadsheet is opened.
- * The menu allows users to send emails to campuses based on specific criteria.
+ * The menu allows users to preview emails or send emails to campuses based
+ * on specific criteria.
  * @function
  * @returns {void}
  */
@@ -60,7 +72,8 @@ function previewEmails(
 
 /**
  * Sends emails to campuses based on the data in the sheet.
- * Only sends emails for rows with a return date, no sent date, and a campus folder ID.
+ * Only sends emails for rows with an anticipated return date, null for date when the
+ * email was sent to campuses, and has a campus folder ID.
  * @param {GoogleAppsScript.Spreadsheet.Sheet} [sheet] - The sheet to process. Defaults to the 'Teacher Notes' sheet.
  * @returns {void}
  */
@@ -305,7 +318,8 @@ function processEmails(sheet, previewMode = false) {
         };
       case "connally":
         return {
-          recipients: ["erica.robles@nisd.net",
+          recipients: [
+            "erica.robles@nisd.net",
             "monica.ramirez@nisd.net"
           ],
           driveLink: "1cWPX_nOXb9yldONekm9Ba3Rsksl9yqKe",
@@ -316,9 +330,9 @@ function processEmails(sheet, previewMode = false) {
             "yvette.lopez@nisd.net",
             "miguel.trevino@nisd.net",
             "terry.precie@nisd.net",
-            "angie.perez@nisd.net",
+            "angelica.perez@nisd.net",
             "norma.esparza@nisd.net",
-            "james.garza@nisd.net",
+            "james-1.garza@nisd.net",
             "keli.hall@nisd.net",
             "ann.devlin@nisd.net"
           ],
@@ -360,7 +374,7 @@ function processEmails(sheet, previewMode = false) {
         return {
           recipients: [
             "monica.cabico@nisd.net",
-            "Nicole.aguirreGomez@nisd.net",
+            "Nicole.Gomez@nisd.net",
             "tiffany.watkins@nisd.net",
             "catherine.villela@nisd.net",
           ],
@@ -374,24 +388,23 @@ function processEmails(sheet, previewMode = false) {
             "erica.lashley@nisd.net",
             "javier.lazo@nisd.net",
             "aaron.logan@nisd.net",
-            "david.johnston@nisd.net",
           ],
           driveLink: "1jBxe9OFTTcones277XnehgvW4EnM4YQk",
         };
       case "jones magnet":
         return {
-          recipients: ["xavier.maldonado@nisd.net"],
+          recipients: ["david.johnston@nisd.net"],
           driveLink: "1oeMqPEr_cpstSWRa0LV-uodQwteQKRWn",
         };
       case "jordan":
         return {
           recipients: [
-            "anabel.romero@nisd.net",
             "Shannon.Zavala@nisd.net",
             "juaquin.zavala@nisd.net",
             "erica.parra@nisd.net",
             "laurel.graham@nisd.net",
-            "robert.ruiz@nisd.net",            
+            "robert.ruiz@nisd.net",
+            "anabel.romero@nisd.net",
           ],
           driveLink: "1T90JGPgUu7DhfBBytxRrfgqkMBrkzOAN",
         };
@@ -432,7 +445,6 @@ function processEmails(sheet, previewMode = false) {
             "Lynda.Desutter@nisd.net",
             "jessica-1.barrera@nisd.net",                      
             "guadalupe.brister@nisd.net",
-            "kevin.vanlanham@nisd.net",
           ],
           driveLink: "1tOusVf1SxNckZC5ro-dwBlk8-YpKUMuh",
         };
@@ -442,7 +454,6 @@ function processEmails(sheet, previewMode = false) {
             "jesus.villela@nisd.net",
             "david.rojas@nisd.net",
             "nicole.buentello@nisd.net",
-            "elizabeth.smith@nisd.net",
           ],
           driveLink: "1p9IXf40oikwOrxSSmonwnBJ-dOJB7Ui6",
         };
@@ -540,7 +551,8 @@ function processEmails(sheet, previewMode = false) {
         return {
           recipients: [
             "reggie.ollendieck@nisd.net",
-            "zina.gonzales@nisd.net"
+            "zina.gonzales@nisd.net",
+            // "alvaro.gomez@nisd.net"
           ],
           driveLink: "1nMJAEcGIh_QnhfS5gjCkKd6CtoA3r5cf",
         };
