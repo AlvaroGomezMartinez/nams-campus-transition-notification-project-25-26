@@ -589,25 +589,22 @@ function processEmails(sheet, previewMode = false) {
       message: {
         subject: `DAEP Placement Transition Plan Notification`,
         html: `Dear ${campus},<br><br>
-        You have ${studentCount} ${studentWord} who ${
-          studentCount === 1 ? "has" : "have"
-        } nearly completed their assigned placement at NAMS and should be returning to ${campus} soon.<br><br>   
-              On their last day of placement, they will be given withdrawal documents and the parents/guardians will have been called and told to contact ${campus} to set up an appointment to re-enroll and meet with an administrator/counselor.<br><br>  
-              Below is a list of the returning ${studentWord}. You can find their DAEP Transition Plans (with grades and notes from their teachers at NAMS) linked below in your campus folder.<br><br>
+        You have ${studentCount} ${studentWord} nearing completion of their assigned placement at NAMS and should be returning to ${campus} soon.<br><br>   
+        On their last day of placement, they will be given withdrawal documents and the parents/guardians will have been called and told to contact ${campus} to set up an appointment to re-enroll and meet with an administrator/counselor.<br><br>  
+        Below is a list of the returning ${studentWord}. You can find their DAEP Transition Plans (with grades and notes from their teachers at NAMS) linked below in your campus folder.<br><br>
+        <h3>${studentWord} returning to ${campus}:</h3>
+          <ul>${studentList}</ul>
 
-              <h3>${studentWord} returning to ${campus}:</h3>
-              <ul>${studentList}</ul>
-
-              <h3>Important Links:</h3>
-              <ul>
-                <li><a href="https://drive.google.com/drive/folders/${driveLink}">${campus} Here is a link to your campus folder for the year.</a></li>
-                <li><a href="https://drive.google.com/file/d/1qnyQ8cCxLVM9D6rg4wkyBp6KrXIELfNx/view?usp=sharing">Updates in Special Education</a></li>
-              </ul>
-              
-              Please let me know if you have any questions or concerns.<br><br>
-              Thank you for all you do,<br>
-              Reggie Ollendieck<br>
-              Associate Principal<br><br>`,
+        <h3>Important Links:</h3>
+            <ul>
+              <li><a href="https://drive.google.com/drive/folders/${driveLink}">${campus} Here is a link to your campus folder for the year.</a></li>
+              <li><a href="https://drive.google.com/file/d/1qnyQ8cCxLVM9D6rg4wkyBp6KrXIELfNx/view?usp=sharing">Updates in Special Education</a></li>
+            </ul>
+        
+        Please let me know if you have any questions or concerns.<br>
+        Thank you for all you do,<br>
+        Reggie Ollendieck<br>
+        Associate Principal<br><br>`,
       },
     };
   }
