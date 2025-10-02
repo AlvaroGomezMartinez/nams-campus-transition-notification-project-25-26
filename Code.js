@@ -581,7 +581,7 @@ function processEmails(sheet, previewMode = false) {
       const row = student.row;
       studentList += `
         <li>
-          <strong>${row["Name"]}</strong> - Expected return: ${row[RETURN_DATE]}<br>
+          <strong>${row["Name"]}</strong><br>
         </li>`;
     });
 
