@@ -18,6 +18,8 @@
  * @lastUpdated 01/06/26
  */
 
+"use strict";
+
 // ============================================================================
 // CORE INFRASTRUCTURE CLASSES
 // ============================================================================
@@ -99,7 +101,7 @@ class MigrationManager {
       };
       
       if (existingSummary) {
-        summary = { ...summary, ...JSON.parse(existingSummary) };
+        summary = Object.assign({}, summary, JSON.parse(existingSummary));
       }
       
       // Update summary based on status
@@ -597,9 +599,6 @@ class MigrationManager {
  * Handles campus data persistence and migration status tracking.
  */
 class PropertiesManager {
-  static CAMPUS_DATA_KEY = 'campusData';
-  static MIGRATION_COMPLETE_KEY = 'migrationComplete';
-  static LAST_UPDATED_KEY = 'lastUpdated';
   
   /**
    * Logs runtime operations for performance monitoring and debugging
@@ -672,7 +671,7 @@ class PropertiesManager {
       };
       
       if (existingStats) {
-        stats = { ...stats, ...JSON.parse(existingStats) };
+        stats = Object.assign({}, stats, JSON.parse(existingStats));
       }
       
       // Update counters based on operation type
@@ -1097,14 +1096,15 @@ class PropertiesManager {
   }
 }
 
+PropertiesManager.CAMPUS_DATA_KEY = 'campusData';
+PropertiesManager.MIGRATION_COMPLETE_KEY = 'migrationComplete';
+PropertiesManager.LAST_UPDATED_KEY = 'lastUpdated';
+
 /**
  * Handles reading from and managing the Recipients sheet.
  * Manages sheet creation, data validation, and recipient data operations.
  */
 class RecipientsSheetManager {
-  static SHEET_NAME = 'Recipients';
-  static CAMPUS_COLUMN = 'Campus';
-  static RECIPIENT_COLUMN = 'Recipient';
   
   /**
    * Reads all recipient data from Recipients sheet with comprehensive validation
@@ -2051,6 +2051,10 @@ class RecipientsSheetManager {
     }
   }
 }
+
+RecipientsSheetManager.SHEET_NAME = 'Recipients';
+RecipientsSheetManager.CAMPUS_COLUMN = 'Campus';
+RecipientsSheetManager.RECIPIENT_COLUMN = 'Recipient';
 
 /**
  * The name of the column used to track the return date for sent emails.
@@ -3335,8 +3339,8 @@ function refreshCampusCache() {
     const duration = Math.round((endTime - startTime) / 1000);
     
     // Get batch operation performance metrics if available
-    const batchMetrics = recipientsData._validationResults?.batchOperation || {};
-    const batchReadTime = batchMetrics.readTime || 'unknown';
+    var batchMetrics = (recipientsData && recipientsData._validationResults && recipientsData._validationResults.batchOperation) || {};
+    var batchReadTime = batchMetrics.readTime || 'unknown';
     
     // Log refresh event for monitoring
     const refreshEvent = {
