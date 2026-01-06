@@ -343,7 +343,7 @@ function processEmails(sheet, previewMode = false) {
         return {
           recipients: [
             "mateo.macias@nisd.net",
-            "anna.lopez@nisd.net",
+            "olivia.chamberlain@nisd.net",
             "julie.minnis@nisd.net",
             "mark.lopez@nisd.net",
             "lori.persyn@nisd.net",
