@@ -3,18 +3,19 @@
  * 
  * @description This script is designed to be run from a Google Sheet. It will send an email
  * with attachments and links to a list of recipients based on the value in the
- * "Campus" column of the sheet.
+ * "Campus" column of the sheet named, "Teacher Notes". This script is part of an email
+ * notification system that uses Autocrat to create letters for each student.
  * 
- * Procedure: The user will first create a transition letter using Autocrat. The letter
- * will be saved in a campus specific shared Google Drive folder.
- * When the user is ready to send the email, he clicks on 'Notify Campuses'
- * in the menubar followed by the option that is provided in the dropdown.
- * An email will be sent to the campus administrators with a link to the folder and the
- * transition letter.
+ * Procedure: The user will first create a transition letter using Autocrat. Autocrat
+ * saves each letter to a campus specific shared Google Drive folder.
+ * After verifying the autocrat created letter and the user is ready to send the email,
+ * the user will click on 'Notify Campuses' in the menubar followed by the option that
+ * is provided in the dropdown. An email will be sent to the campus administrators with a
+ * link to the folder that contains the transition letter.
  * 
  * @projectLead Reggie Ollendieck, Associate Principal, NAMS
  * @author Alvaro Gomez, Academic Technology Coach, 1-210-397-9408, alvaro.gomez@nisd.net
- * @lastUpdated 08/11/25
+ * @lastUpdated 01/06/26
  */
 
 /**
@@ -72,7 +73,7 @@ function previewEmails(
 
 /**
  * Sends emails to campuses based on the data in the sheet.
- * Only sends emails for rows with an anticipated return date, null for date when the
+ * Only sends emails for rows with an anticipated return date, a null value for the date when the
  * email was sent to campuses, and has a campus folder ID.
  * @param {GoogleAppsScript.Spreadsheet.Sheet} [sheet] - The sheet to process. Defaults to the 'Teacher Notes' sheet.
  * @returns {void}
